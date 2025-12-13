@@ -1,0 +1,8 @@
+---
+source: lantern-language/src/parser.rs
+expression: ast
+---
+Query {
+    source: "test",
+    commands: [],
+}

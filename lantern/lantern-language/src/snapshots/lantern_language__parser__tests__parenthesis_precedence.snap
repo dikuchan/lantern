@@ -1,0 +1,26 @@
+---
+source: lantern-language/src/parser.rs
+expression: ast
+---
+Query {
+    source: "test",
+    commands: [
+        Where(
+            Binary(
+                And,
+                Binary(
+                    Or,
+                    Field(
+                        "a",
+                    ),
+                    Field(
+                        "b",
+                    ),
+                ),
+                Field(
+                    "c",
+                ),
+            ),
+        ),
+    ],
+}

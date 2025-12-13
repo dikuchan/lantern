@@ -1,0 +1,32 @@
+---
+source: lantern-language/src/parser.rs
+expression: ast
+---
+Query {
+    source: "test",
+    commands: [
+        Where(
+            Binary(
+                GreaterThan,
+                Binary(
+                    Add,
+                    Field(
+                        "a",
+                    ),
+                    Binary(
+                        Multiply,
+                        Field(
+                            "b",
+                        ),
+                        Field(
+                            "c",
+                        ),
+                    ),
+                ),
+                Number(
+                    10.0,
+                ),
+            ),
+        ),
+    ],
+}

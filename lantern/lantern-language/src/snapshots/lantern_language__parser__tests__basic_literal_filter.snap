@@ -1,0 +1,20 @@
+---
+source: lantern-language/src/parser.rs
+expression: ast
+---
+Query {
+    source: "test",
+    commands: [
+        Where(
+            Binary(
+                Equal,
+                Field(
+                    "status",
+                ),
+                Number(
+                    200.0,
+                ),
+            ),
+        ),
+    ],
+}

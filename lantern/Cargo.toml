@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = [
+    "lantern-cli",
+    "lantern-language",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[workspace.dependencies]
+anyhow = "1.0.100"
+ariadne = "0.6.0"
+chumsky = "1.0.0-alpha.8"
+clap = "4.5.53"
+logos = "0.16.0"
+
+lantern-language = { path = "lantern-language" }

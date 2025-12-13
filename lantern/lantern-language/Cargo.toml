@@ -1,0 +1,12 @@
+[package]
+name = "lantern-language"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ariadne = { workspace = true }
+chumsky = { workspace = true }
+logos = { workspace = true }
+
+[dev-dependencies]
+insta = { version = "1.44.3" }
