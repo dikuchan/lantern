@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "lantern-cli",
+    "lantern-engine",
     "lantern-language",
 ]
 
@@ -14,6 +15,9 @@ anyhow = "1.0.100"
 ariadne = "0.6.0"
 chumsky = "1.0.0-alpha.8"
 clap = "4.5.53"
+datafusion = "51.0.0"
 logos = "0.16.0"
+tokio = "1.48.0"
 
+lantern-engine = { path = "lantern-engine" }
 lantern-language = { path = "lantern-language" }

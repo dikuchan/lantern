@@ -1,0 +1,110 @@
+use std::sync::Arc;
+
+use datafusion::common::ScalarValue::Null;
+use datafusion::datasource::DefaultTableSource;
+use datafusion::error::{DataFusionError, Result};
+use datafusion::execution::FunctionRegistry;
+use datafusion::logical_expr::expr::ScalarFunction;
+use datafusion::logical_expr::{BinaryExpr, LogicalPlan, LogicalPlanBuilder, Operator};
+use datafusion::prelude::*;
+use lantern_language::{BinaryOperator, Command, Expression, Query};
+
+pub struct QueryPlanner<'a> {
+    context: &'a SessionContext,
+}
+
+impl<'a> QueryPlanner<'a> {
+    pub fn new(ctx: &'a SessionContext) -> Self {
+        Self { context: ctx }
+    }
+
+    pub async fn create_logical_plan(&self, query: Query) -> Result<LogicalPlan> {
+        let table_provider = self
+            .context
+            .table_provider(&query.source)
+            .await
+            .map_err(|error| {
+                DataFusionError::Plan(format!("Table '{}' not found: {}", query.source, error))
+            })?;
+        let table_source = DefaultTableSource::new(table_provider);
+
+        let mut builder = LogicalPlanBuilder::scan(&query.source, Arc::new(table_source), None)?;
+        for command in query.commands {
+            builder = self.apply_command(builder, command)?;
+        }
+        builder.build()
+    }
+
+    fn apply_command(
+        &self,
+        builder: LogicalPlanBuilder,
+        command: Command,
+    ) -> Result<LogicalPlanBuilder> {
+        match command {
+            Command::Where(expression) => {
+                let expression = self.map_expression(expression)?;
+                builder.filter(expression)
+            }
+            Command::Limit(n) => builder.limit(0, Some(n as usize)),
+        }
+    }
+
+    fn map_expression(&self, expression: Expression) -> Result<Expr> {
+        match expression {
+            Expression::Null => Ok(lit(Null)),
+            Expression::Boolean(v) => Ok(lit(v)),
+            Expression::Number(v) => Ok(lit(v)),
+            Expression::String(v) => Ok(lit(v)),
+            Expression::Field(v) => Ok(col(v)),
+            Expression::Binary(operator, left, right) => {
+                let left = Box::new(self.map_expression(*left)?);
+                let right = Box::new(self.map_expression(*right)?);
+                match operator {
+                    BinaryOperator::And => Ok(left.and(*right)),
+                    BinaryOperator::Or => Ok(left.or(*right)),
+                    _ => Ok(Expr::BinaryExpr(BinaryExpr {
+                        left,
+                        op: self.map_operator(operator)?,
+                        right,
+                    })),
+                }
+            }
+            Expression::Call(function_name, arguments) => {
+                let arguments: Vec<Expr> = arguments
+                    .into_iter()
+                    .map(|argument| self.map_expression(argument))
+                    .collect::<Result<Vec<_>>>()?;
+                if let Some(function) = self.context.udf(&function_name).ok() {
+                    return Ok(Expr::ScalarFunction(ScalarFunction::new_udf(
+                        function, arguments,
+                    )));
+                }
+                Err(DataFusionError::Plan(format!(
+                    "Function '{}' not found. It is not a registered UDF or built-in function",
+                    function_name,
+                )))
+            }
+        }
+    }
+
+    fn map_operator(&self, operator: BinaryOperator) -> Result<Operator> {
+        match operator {
+            BinaryOperator::Add => Ok(Operator::Plus),
+            BinaryOperator::Subtract => Ok(Operator::Minus),
+            BinaryOperator::Multiply => Ok(Operator::Multiply),
+            BinaryOperator::Divide => Ok(Operator::Divide),
+            BinaryOperator::Equal => Ok(Operator::Eq),
+            BinaryOperator::NotEqual => Ok(Operator::NotEq),
+            BinaryOperator::GreaterThan => Ok(Operator::Gt),
+            BinaryOperator::GreaterThanOrEqual => Ok(Operator::GtEq),
+            BinaryOperator::LessThan => Ok(Operator::Lt),
+            BinaryOperator::LessThanOrEqual => Ok(Operator::LtEq),
+            BinaryOperator::And => {
+                unreachable!("Logical 'and' should be handled in expression builder")
+            }
+            BinaryOperator::Or => {
+                unreachable!("Logical 'or' should be handled in expression builder")
+            }
+        }
+    }
+}

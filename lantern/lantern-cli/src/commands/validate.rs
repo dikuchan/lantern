@@ -14,9 +14,9 @@ pub struct ValidateCommand {
 }
 
 impl Command for ValidateCommand {
-    fn execute(&self) -> anyhow::Result<()> {
+    async fn execute(&self) -> anyhow::Result<()> {
         match &self.subcommand {
-            ValidateSubcommands::Query(command) => command.execute(),
+            ValidateSubcommands::Query(command) => command.execute().await,
         }
     }
 }
@@ -35,7 +35,7 @@ pub struct ValidateQueryCommand {
 }
 
 impl Command for ValidateQueryCommand {
-    fn execute(&self) -> anyhow::Result<()> {
+    async fn execute(&self) -> anyhow::Result<()> {
         validate_query(self.file_path.clone())
     }
 }

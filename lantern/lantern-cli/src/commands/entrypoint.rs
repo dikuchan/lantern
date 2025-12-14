@@ -1,4 +1,5 @@
 use crate::command::Command;
+use crate::commands::execute::ExecuteCommand;
 use crate::commands::validate::ValidateCommand;
 
 use clap::{Parser, Subcommand};
@@ -11,9 +12,10 @@ pub struct Entrypoint {
 }
 
 impl Command for Entrypoint {
-    fn execute(&self) -> anyhow::Result<()> {
+    async fn execute(&self) -> anyhow::Result<()> {
         match &self.subcommand {
-            Some(Subcommands::Validate(command)) => command.execute(),
+            Some(Subcommands::Validate(v)) => v.execute().await,
+            Some(Subcommands::Execute(v)) => v.execute().await,
             None => Ok(()),
         }
     }
@@ -22,4 +24,5 @@ impl Command for Entrypoint {
 #[derive(Subcommand)]
 pub enum Subcommands {
     Validate(ValidateCommand),
+    Execute(ExecuteCommand),
 }
