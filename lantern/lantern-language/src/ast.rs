@@ -29,6 +29,10 @@ pub enum Expression {
 pub enum Command {
     Where(Expression),
     Limit(i64),
+    Aggregate {
+        aggregates: Vec<(Expression, Option<String>)>,
+        by: Vec<Expression>,
+    },
 }
 
 #[derive(Debug, Clone)]

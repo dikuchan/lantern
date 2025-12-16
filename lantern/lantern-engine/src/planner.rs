@@ -4,7 +4,7 @@ use datafusion::common::ScalarValue::Null;
 use datafusion::datasource::DefaultTableSource;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::execution::FunctionRegistry;
-use datafusion::logical_expr::expr::ScalarFunction;
+use datafusion::logical_expr::expr::{AggregateFunction, ScalarFunction};
 use datafusion::logical_expr::{BinaryExpr, LogicalPlan, LogicalPlanBuilder, Operator};
 use datafusion::prelude::*;
 use lantern_language::{BinaryOperator, Command, Expression, Query};
@@ -46,6 +46,23 @@ impl<'a> QueryPlanner<'a> {
                 builder.filter(expression)
             }
             Command::Limit(n) => builder.limit(0, Some(n as usize)),
+            Command::Aggregate { aggregates, by } => {
+                let group_expressions: Vec<Expr> = by
+                    .into_iter()
+                    .map(|expression| self.map_expression(expression))
+                    .collect::<Result<_>>()?;
+
+                let mut aggregate_expressions = Vec::new();
+                for (expression, alias_option) in aggregates {
+                    let mut expression = self.map_expression(expression)?;
+                    if let Some(alias) = alias_option {
+                        expression = expression.alias(alias);
+                    }
+                    aggregate_expressions.push(expression);
+                }
+
+                builder.aggregate(group_expressions, aggregate_expressions)
+            }
         }
     }
 
@@ -70,10 +87,27 @@ impl<'a> QueryPlanner<'a> {
                 }
             }
             Expression::Call(function_name, arguments) => {
-                let arguments: Vec<Expr> = arguments
+                let mut arguments: Vec<Expr> = arguments
                     .into_iter()
                     .map(|argument| self.map_expression(argument))
                     .collect::<Result<Vec<_>>>()?;
+
+                // Hack: count(1) is equivalent to count(*).
+                if function_name == "count" && arguments.is_empty() {
+                    arguments.push(lit(1i64));
+                }
+
+                if let Ok(aggregation_function) = self.context.udaf(&function_name) {
+                    return Ok(Expr::AggregateFunction(AggregateFunction::new_udf(
+                        aggregation_function,
+                        arguments,
+                        false,      // Distinct.
+                        None,       // Filter.
+                        Vec::new(), // Order by.
+                        None,
+                    )));
+                }
+
                 if let Some(function) = self.context.udf(&function_name).ok() {
                     return Ok(Expr::ScalarFunction(ScalarFunction::new_udf(
                         function, arguments,

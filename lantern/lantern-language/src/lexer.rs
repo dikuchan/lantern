@@ -23,6 +23,10 @@ pub enum Token<'a> {
     KeywordWhere,
     #[token("limit")]
     KeywordLimit,
+    #[token("aggr")]
+    KeywordAggregate,
+    #[token("by")]
+    KeywordBy,
 
     #[token("|")]
     Pipe,
@@ -55,6 +59,8 @@ pub enum Token<'a> {
     OperatorAnd,
     #[token("or")]
     OperatorOr,
+    #[token("=")]
+    OperatorAssign,
 
     #[regex("-?[0-9]+", callback_integer)]
     Integer(i64),
@@ -63,6 +69,9 @@ pub enum Token<'a> {
 
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", callback_string)]
     Identifier(&'a str),
+
+    #[token(",")]
+    Comma,
 
     #[regex(r"[ \t\f\n]+", logos::skip)]
     Whitespace,
@@ -74,6 +83,8 @@ impl fmt::Display for Token<'_> {
             Self::KeywordSource => write!(f, "source"),
             Self::KeywordWhere => write!(f, "where"),
             Self::KeywordLimit => write!(f, "limit"),
+            Self::KeywordAggregate => write!(f, "aggr"),
+            Self::KeywordBy => write!(f, "by"),
             Self::Pipe => write!(f, "|"),
             Self::LeftParenthesis => write!(f, "("),
             Self::RightParenthesis => write!(f, ")"),
@@ -89,9 +100,11 @@ impl fmt::Display for Token<'_> {
             Self::OperatorLessThanOrEqual => write!(f, "<="),
             Self::OperatorAnd => write!(f, "and"),
             Self::OperatorOr => write!(f, "or"),
+            Self::OperatorAssign => write!(f, "="),
             Self::Integer(i) => write!(f, "{}", i),
             Self::StringLiteral(s) => write!(f, "\"{}\"", s),
             Self::Identifier(i) => write!(f, "{}", i),
+            Self::Comma => write!(f, ","),
             Self::Whitespace => write!(f, "<whitespace>"),
             Self::Error => write!(f, "<error>"),
         }

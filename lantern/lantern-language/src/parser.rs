@@ -50,34 +50,76 @@ where
 {
     let expression = expression_parser();
 
+    let identifier = select! { Token::Identifier(i) => i.to_string() };
+    let aggregation_item = choice((
+        identifier
+            .then_ignore(just(Token::OperatorAssign))
+            .then(expression.clone())
+            .map(|(alias, expression)| (expression, Some(alias))),
+        expression.clone().map(|expr| (expr, None)),
+    ));
+
+    let by_clause = just(Token::KeywordBy)
+        .ignore_then(
+            expression
+                .clone()
+                .separated_by(just(Token::Comma))
+                .collect(),
+        )
+        .or_not()
+        .map(|option| option.unwrap_or_default());
+
+    let command_aggregate = just(Token::KeywordAggregate)
+        .ignore_then(aggregation_item.separated_by(just(Token::Comma)).collect())
+        .then(by_clause)
+        .map(|(aggregates, by)| Command::Aggregate { aggregates, by });
+
     let command_where = just(Token::KeywordWhere)
-        .ignore_then(expression)
+        .ignore_then(expression.clone())
         .map(Command::Where);
     let command_limit = just(Token::KeywordLimit)
         .ignore_then(select! { Token::Integer(n) => n })
         .map(Command::Limit);
 
-    choice((command_where, command_limit))
+    choice((command_where, command_limit, command_aggregate))
 }
 
 fn expression_parser<'tokens, 'source: 'tokens, I>()
--> impl Parser<'tokens, I, Expression, extra::Err<Rich<'tokens, Token<'source>, Span>>>
+-> impl Parser<'tokens, I, Expression, extra::Err<Rich<'tokens, Token<'source>, Span>>> + Clone
 where
     I: ValueInput<'tokens, Token = Token<'source>, Span = Span>,
 {
+    let identifier = select! { Token::Identifier(i) => i.to_string() };
+    let number = select! { Token::Integer(n) => Expression::Number(n as f64) };
+    let string_literal = select! { Token::StringLiteral(s) => Expression::String(s.to_owned()) };
+
     recursive(|expression| {
-        let base = choice((
-            select! { Token::Integer(n) => Expression::Number(n as f64) },
-            select! { Token::Identifier(i) => Expression::Field(i.to_string()) },
-            select! { Token::StringLiteral(s) => Expression::String(s.to_owned()) },
+        let call = identifier
+            .then_ignore(just(Token::LeftParenthesis))
+            .then(
+                expression
+                    .clone()
+                    .separated_by(just(Token::Comma))
+                    .collect(),
+            )
+            .then_ignore(just(Token::RightParenthesis))
+            .map(|(name, arguments)| Expression::Call(name, arguments));
+
+        let field = identifier.map(Expression::Field);
+
+        let atom = choice((
+            number,
+            string_literal,
+            call,
+            field,
             expression.delimited_by(just(Token::LeftParenthesis), just(Token::RightParenthesis)),
         ));
 
-        let product = base.clone().foldl(
+        let product = atom.clone().foldl(
             just(Token::OperatorMultiply)
                 .to(BinaryOperator::Multiply)
                 .or(just(Token::OperatorDivide).to(BinaryOperator::Divide))
-                .then(base)
+                .then(atom)
                 .repeated(),
             |l, (operator, r)| Expression::Binary(operator, Box::new(l), Box::new(r)),
         );
