@@ -2,6 +2,8 @@ use crate::command::Command;
 
 mod command;
 mod commands;
+mod repl;
+mod utils;
 
 #[tokio::main]
 async fn main() {

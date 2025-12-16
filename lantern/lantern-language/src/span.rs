@@ -17,6 +17,14 @@ impl Span {
         }
     }
 
+    pub fn start(&self) -> usize {
+        self.start
+    }
+
+    pub fn end(&self) -> usize {
+        self.end
+    }
+
     pub fn into_range(self) -> Range<usize> {
         Range {
             start: self.start,

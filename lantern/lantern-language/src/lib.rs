@@ -1,8 +1,8 @@
 mod ast;
-mod lexer;
 mod parser_error;
 mod span;
 
+pub mod lexer;
 pub mod parser;
 
 pub use ast::*;

@@ -1,4 +1,3 @@
-use std::env;
 use std::fs::File;
 use std::io::{stdin, Read};
 use std::path::{Path, PathBuf};
@@ -8,6 +7,7 @@ use clap::Args;
 use lantern_engine::Context;
 
 use crate::command::Command;
+use crate::utils::get_data_dir_path;
 
 #[derive(Args)]
 pub struct ExecuteCommand {
@@ -30,8 +30,7 @@ impl ExecuteCommand {
         let _ = input.read_to_end(&mut buffer)?;
         let source = String::from_utf8(buffer)?;
 
-        let home_dir_path = env::home_dir().ok_or(anyhow!("Cannot access home directory"))?;
-        let data_dir_path = home_dir_path.join(".lantern").join("data");
+        let data_dir_path = get_data_dir_path(self.data_dir_path.clone())?;
         if !data_dir_path.exists() {
             return Err(anyhow!("Data directory doesn't exist"));
         }
