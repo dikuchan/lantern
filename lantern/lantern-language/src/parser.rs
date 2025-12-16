@@ -6,6 +6,7 @@ use crate::ast::{BinaryOperator, Command, Expression, Query};
 use crate::lexer::{tokenizer, Token};
 use crate::parser_error::ParserError;
 use crate::span::Span;
+use crate::{SortExpression, SortOrder};
 
 pub struct QueryParser;
 
@@ -51,6 +52,31 @@ where
     let expression = expression_parser();
 
     let identifier = select! { Token::Identifier(i) => i.to_string() };
+
+    let command_where = just(Token::KeywordWhere)
+        .ignore_then(expression.clone())
+        .map(Command::Where);
+
+    let sort_item = choice((
+        just(Token::OperatorSubtract)
+            .ignore_then(expression.clone())
+            .map(|expression| (expression, SortOrder::Descending)),
+        just(Token::OperatorAdd)
+            .ignore_then(expression.clone())
+            .map(|expression| (expression, SortOrder::Ascending)),
+        expression.clone().map(|expr| (expr, SortOrder::Ascending)),
+    ))
+    .map(|(expression, order)| SortExpression { expression, order });
+    let command_sort = just(Token::KeywordSort)
+        .ignore_then(just(Token::KeywordBy).or_not())
+        .ignore_then(sort_item.separated_by(just(Token::Comma)).collect())
+        .map(Command::Sort)
+        .labelled("sort");
+
+    let command_limit = just(Token::KeywordLimit)
+        .ignore_then(select! { Token::Integer(n) => n })
+        .map(Command::Limit);
+
     let aggregation_item = choice((
         identifier
             .then_ignore(just(Token::OperatorAssign))
@@ -58,7 +84,6 @@ where
             .map(|(alias, expression)| (expression, Some(alias))),
         expression.clone().map(|expr| (expr, None)),
     ));
-
     let by_clause = just(Token::KeywordBy)
         .ignore_then(
             expression
@@ -68,20 +93,17 @@ where
         )
         .or_not()
         .map(|option| option.unwrap_or_default());
-
     let command_aggregate = just(Token::KeywordAggregate)
         .ignore_then(aggregation_item.separated_by(just(Token::Comma)).collect())
         .then(by_clause)
         .map(|(aggregates, by)| Command::Aggregate { aggregates, by });
 
-    let command_where = just(Token::KeywordWhere)
-        .ignore_then(expression.clone())
-        .map(Command::Where);
-    let command_limit = just(Token::KeywordLimit)
-        .ignore_then(select! { Token::Integer(n) => n })
-        .map(Command::Limit);
-
-    choice((command_where, command_limit, command_aggregate))
+    choice((
+        command_where,
+        command_sort,
+        command_limit,
+        command_aggregate,
+    ))
 }
 
 fn expression_parser<'tokens, 'source: 'tokens, I>()
@@ -201,6 +223,9 @@ mod tests {
 
         string_quoting:
             r#"source test | where name == "O'Conner" "#,
+
+        sort_mixed:
+            "source test | sort by -count, +status, time",
     }
 
     #[test]

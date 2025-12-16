@@ -21,6 +21,8 @@ pub enum Token<'a> {
     KeywordSource,
     #[token("where")]
     KeywordWhere,
+    #[token("sort")]
+    KeywordSort,
     #[token("limit")]
     KeywordLimit,
     #[token("aggr")]
@@ -82,6 +84,7 @@ impl fmt::Display for Token<'_> {
         match self {
             Self::KeywordSource => write!(f, "source"),
             Self::KeywordWhere => write!(f, "where"),
+            Self::KeywordSort => write!(f, "sort"),
             Self::KeywordLimit => write!(f, "limit"),
             Self::KeywordAggregate => write!(f, "aggr"),
             Self::KeywordBy => write!(f, "by"),

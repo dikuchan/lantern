@@ -5,9 +5,9 @@ use datafusion::datasource::DefaultTableSource;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::execution::FunctionRegistry;
 use datafusion::logical_expr::expr::{AggregateFunction, ScalarFunction};
-use datafusion::logical_expr::{BinaryExpr, LogicalPlan, LogicalPlanBuilder, Operator};
+use datafusion::logical_expr::{BinaryExpr, LogicalPlan, LogicalPlanBuilder, Operator, SortExpr};
 use datafusion::prelude::*;
-use lantern_language::{BinaryOperator, Command, Expression, Query};
+use lantern_language::{BinaryOperator, Command, Expression, Query, SortOrder};
 
 pub struct QueryPlanner<'a> {
     context: &'a SessionContext,
@@ -44,6 +44,20 @@ impl<'a> QueryPlanner<'a> {
             Command::Where(expression) => {
                 let expression = self.map_expression(expression)?;
                 builder.filter(expression)
+            }
+            Command::Sort(sort_expressions) => {
+                let sort_expressions: Vec<SortExpr> = sort_expressions
+                    .into_iter()
+                    .map(|sort_expression| {
+                        let expression = self.map_expression(sort_expression.expression)?;
+                        let ascending = match sort_expression.order {
+                            SortOrder::Ascending => true,
+                            SortOrder::Descending => false,
+                        };
+                        Ok(expression.sort(ascending, false))
+                    })
+                    .collect::<Result<_>>()?;
+                builder.sort(sort_expressions)
             }
             Command::Limit(n) => builder.limit(0, Some(n as usize)),
             Command::Aggregate { aggregates, by } => {

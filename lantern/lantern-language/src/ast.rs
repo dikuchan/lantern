@@ -25,9 +25,22 @@ pub enum Expression {
     Call(String, Vec<Expression>),
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum SortOrder {
+    Ascending,
+    Descending,
+}
+
+#[derive(Debug, Clone)]
+pub struct SortExpression {
+    pub expression: Expression,
+    pub order: SortOrder,
+}
+
 #[derive(Debug, Clone)]
 pub enum Command {
     Where(Expression),
+    Sort(Vec<SortExpression>),
     Limit(i64),
     Aggregate {
         aggregates: Vec<(Expression, Option<String>)>,

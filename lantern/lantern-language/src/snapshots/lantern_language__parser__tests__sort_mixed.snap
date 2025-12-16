@@ -1,0 +1,31 @@
+---
+source: lantern-language/src/parser.rs
+expression: ast
+---
+Query {
+    source: "test",
+    commands: [
+        Sort(
+            [
+                SortExpression {
+                    expression: Field(
+                        "count",
+                    ),
+                    order: Descending,
+                },
+                SortExpression {
+                    expression: Field(
+                        "status",
+                    ),
+                    order: Ascending,
+                },
+                SortExpression {
+                    expression: Field(
+                        "time",
+                    ),
+                    order: Ascending,
+                },
+            ],
+        ),
+    ],
+}
