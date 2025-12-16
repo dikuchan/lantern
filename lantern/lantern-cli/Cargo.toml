@@ -9,4 +9,5 @@ clap = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 lantern-engine = { workspace = true }
+lantern-ingester = { workspace = true }
 lantern-language = { workspace = true }

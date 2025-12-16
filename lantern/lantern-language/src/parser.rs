@@ -1,11 +1,11 @@
+use chumsky::input::{Stream, ValueInput};
+use chumsky::prelude::*;
+use chumsky::Parser;
+
 use crate::ast::{BinaryOperator, Command, Expression, Query};
 use crate::lexer::{tokenizer, Token};
 use crate::parser_error::ParserError;
 use crate::span::Span;
-
-use chumsky::input::{Stream, ValueInput};
-use chumsky::prelude::*;
-use chumsky::Parser;
 
 pub struct QueryParser;
 

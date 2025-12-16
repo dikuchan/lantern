@@ -1,11 +1,11 @@
-use crate::command::Command;
-
 use std::fs::File;
 use std::io::{stdin, Read};
 use std::path::PathBuf;
 
 use clap::{Args, Subcommand};
 use lantern_language::parser;
+
+use crate::command::Command;
 
 #[derive(Args)]
 pub struct ValidateCommand {

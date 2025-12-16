@@ -1,8 +1,7 @@
-use crate::command::Command;
-use crate::commands::execute::ExecuteCommand;
-use crate::commands::validate::ValidateCommand;
-
 use clap::{Parser, Subcommand};
+
+use crate::command::Command;
+use crate::commands::{ExecuteCommand, IngestCommand, ValidateCommand};
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -16,6 +15,7 @@ impl Command for Entrypoint {
         match &self.subcommand {
             Some(Subcommands::Validate(v)) => v.execute().await,
             Some(Subcommands::Execute(v)) => v.execute().await,
+            Some(Subcommands::Ingest(v)) => v.execute().await,
             None => Ok(()),
         }
     }
@@ -23,6 +23,7 @@ impl Command for Entrypoint {
 
 #[derive(Subcommand)]
 pub enum Subcommands {
-    Validate(ValidateCommand),
     Execute(ExecuteCommand),
+    Ingest(IngestCommand),
+    Validate(ValidateCommand),
 }

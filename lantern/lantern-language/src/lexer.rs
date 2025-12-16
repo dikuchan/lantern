@@ -1,8 +1,8 @@
-use crate::span::Span;
-
 use std::fmt;
 
 use logos::{Lexer, Logos};
+
+use crate::span::Span;
 
 pub fn tokenizer(source: &'_ str) -> impl Iterator<Item = (Token<'_>, Span)> {
     Token::lexer(source)

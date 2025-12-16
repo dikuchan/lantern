@@ -1,11 +1,11 @@
-use crate::lexer::Token;
-use crate::span::Span;
-
 use std::fmt;
 use std::fmt::Debug;
 
 use ariadne::{Color, Label, Report, ReportKind, Source};
 use chumsky::prelude::*;
+
+use crate::lexer::Token;
+use crate::span::Span;
 
 type RichError<'a> = Rich<'a, Token<'a>, Span>;
 

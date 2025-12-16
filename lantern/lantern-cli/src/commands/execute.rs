@@ -1,23 +1,16 @@
-use crate::command::Command;
-
+use std::env;
 use std::fs::File;
 use std::io::{stdin, Read};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
 use clap::Args;
 use lantern_engine::Context;
 
+use crate::command::Command;
+
 #[derive(Args)]
 pub struct ExecuteCommand {
-    /// Name of a table in the query.
-    #[arg(value_name = "TABLE")]
-    pub table_name: String,
-
-    /// Path to a table file.
-    #[arg(value_name = "TABLE_FILE")]
-    pub table_file_path: PathBuf,
-
     /// Query text.
     #[arg(value_name = "QUERY")]
     pub source: Option<String>,
@@ -25,6 +18,10 @@ pub struct ExecuteCommand {
     /// Path to a query file.
     #[arg(long = "file", short = 'f', value_name = "FILE")]
     pub file_path: Option<PathBuf>,
+
+    /// Path to the data directory. Defaults to `$HOME/.lantern/data`.
+    #[arg(long = "data-dir", short = 'd', value_name = "DATA_DIR")]
+    pub data_dir_path: Option<PathBuf>,
 }
 
 impl ExecuteCommand {
@@ -33,25 +30,21 @@ impl ExecuteCommand {
         let _ = input.read_to_end(&mut buffer)?;
         let source = String::from_utf8(buffer)?;
 
-        self.execute_query(
-            &source,
-            &self.table_name,
-            self.table_file_path
-                .to_str()
-                .ok_or(anyhow!("Path is not UTF-8"))?,
-        )
-        .await
+        let home_dir_path = env::home_dir().ok_or(anyhow!("Cannot access home directory"))?;
+        let data_dir_path = home_dir_path.join(".lantern").join("data");
+        if !data_dir_path.exists() {
+            return Err(anyhow!("Data directory doesn't exist"));
+        }
+
+        self.execute_query(&source, data_dir_path).await
     }
 
-    async fn execute_query(
+    async fn execute_query<P: AsRef<Path>>(
         &self,
         source: &str,
-        table_name: &str,
-        table_file_path: &str,
+        data_dir_path: P,
     ) -> anyhow::Result<()> {
-        let context = Context::new();
-        context.register_csv(table_name, table_file_path).await?;
-
+        let context = Context::new(data_dir_path);
         let data = context.execute(&source).await?;
         data.show().await?;
 

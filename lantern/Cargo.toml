@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "lantern-cli",
     "lantern-engine",
+    "lantern-ingester",
     "lantern-language",
 ]
 
@@ -13,11 +14,17 @@ edition = "2024"
 [workspace.dependencies]
 anyhow = "1.0.100"
 ariadne = "0.6.0"
+arrow = "57.1.0"
+arrow-json = "57.1.0"
 chumsky = "1.0.0-alpha.8"
 clap = "4.5.53"
 datafusion = "51.0.0"
 logos = "0.16.0"
+parquet = "57.1.0"
+thiserror = "2.0.17"
 tokio = "1.48.0"
+uuid = "1.19.0"
 
 lantern-engine = { path = "lantern-engine" }
+lantern-ingester = { path = "lantern-ingester" }
 lantern-language = { path = "lantern-language" }

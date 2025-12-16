@@ -1,27 +1,24 @@
-use crate::planner::QueryPlanner;
+use std::path::{Path, PathBuf};
 
 use datafusion::error::{DataFusionError, Result};
-use datafusion::prelude::*;
-use datafusion::prelude::{DataFrame, SessionConfig, SessionContext};
+use datafusion::prelude::{DataFrame, SessionConfig, SessionContext, *};
 use lantern_language::parser;
+
+use crate::planner::QueryPlanner;
 
 pub struct Context {
     context: SessionContext,
+    data_dir_path: PathBuf,
 }
 
 impl Context {
-    pub fn new() -> Self {
+    pub fn new<P: AsRef<Path>>(data_dir_path: P) -> Self {
         let config = SessionConfig::new().with_information_schema(true);
         let context = SessionContext::new_with_config(config);
-        Self { context }
-    }
-
-    pub async fn register_csv(&self, table_name: &str, table_path: &str) -> Result<()> {
-        let options = CsvReadOptions::new().has_header(true);
-        self.context
-            .register_csv(table_name, table_path, options)
-            .await?;
-        Ok(())
+        Self {
+            context,
+            data_dir_path: data_dir_path.as_ref().to_owned(),
+        }
     }
 
     pub async fn execute(&self, source: &str) -> Result<DataFrame> {
@@ -33,6 +30,8 @@ impl Context {
             DataFusionError::Plan(format!("Parse error: {:?}", error))
         })?;
 
+        self.register_table(&query.source).await?;
+
         let planner = QueryPlanner::new(&self.context);
         let plan = planner.create_logical_plan(query).await?;
 
@@ -40,5 +39,25 @@ impl Context {
             .execute_logical_plan(plan)
             .await
             .map_err(|error| error.into())
+    }
+
+    async fn register_table(&self, table_name: &str) -> Result<()> {
+        let table_path = self.data_dir_path.join(table_name);
+        if !table_path.exists() {
+            return Err(DataFusionError::Execution(format!(
+                "Table '{}' does not exist (directory not found: {:?})",
+                table_name, table_path,
+            )));
+        }
+        let table_path_str = table_path
+            .to_str()
+            .ok_or(DataFusionError::Execution("Invalid table path".to_owned()))?;
+
+        let options = ParquetReadOptions::new().parquet_pruning(true);
+        self.context
+            .register_parquet(table_name, table_path_str, options)
+            .await?;
+
+        Ok(())
     }
 }
