@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::anyhow;
 use clap::Args;
-use lantern_ingester::Ingester;
+use elucid_ingester::Ingester;
 use tokio::{fs, io};
 
 use crate::command::Command;

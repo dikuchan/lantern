@@ -3,7 +3,7 @@ use std::io::{stdin, Read};
 use std::path::PathBuf;
 
 use clap::{Args, Subcommand};
-use lantern_language::parser;
+use elucid_language::parser;
 
 use crate::command::Command;
 

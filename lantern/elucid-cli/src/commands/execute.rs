@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
 use clap::Args;
-use lantern_engine::Context;
+use elucid_engine::Context;
 
 use crate::command::Command;
 use crate::utils::get_data_dir_path;

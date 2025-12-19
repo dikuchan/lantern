@@ -1,9 +1,9 @@
 [package]
-name = "lantern-engine"
+name = "elucid-engine"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
 datafusion = { workspace = true }
 
-lantern-language = { workspace = true }
+elucid-language = { workspace = true }

@@ -1,4 +1,4 @@
-use lantern_language::lexer::{tokenizer, Token};
+use elucid_language::lexer::{tokenizer, Token};
 use nu_ansi_term::{Color, Style};
 use reedline::{Highlighter, StyledText};
 

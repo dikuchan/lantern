@@ -1,4 +1,4 @@
-use lantern_engine::Context;
+use elucid_engine::Context;
 use reedline::{DefaultPrompt, DefaultPromptSegment, Emacs, Reedline, Signal};
 
 use self::super::highlighter::QueryHighlighter;

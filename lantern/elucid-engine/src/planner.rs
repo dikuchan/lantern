@@ -7,7 +7,7 @@ use datafusion::execution::FunctionRegistry;
 use datafusion::logical_expr::expr::{AggregateFunction, ScalarFunction};
 use datafusion::logical_expr::{BinaryExpr, LogicalPlan, LogicalPlanBuilder, Operator, SortExpr};
 use datafusion::prelude::*;
-use lantern_language::{BinaryOperator, Command, Expression, Query, SortOrder};
+use elucid_language::{BinaryOperator, Command, Expression, Query, SortOrder};
 
 pub struct QueryPlanner<'a> {
     context: &'a SessionContext,

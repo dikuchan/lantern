@@ -1,5 +1,5 @@
 [package]
-name = "lantern-cli"
+name = "elucid-cli"
 version.workspace = true
 edition.workspace = true
 
@@ -10,6 +10,6 @@ nu-ansi-term = { workspace = true }
 reedline = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
-lantern-engine = { workspace = true }
-lantern-ingester = { workspace = true }
-lantern-language = { workspace = true }
+elucid-engine = { workspace = true }
+elucid-ingester = { workspace = true }
+elucid-language = { workspace = true }

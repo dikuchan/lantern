@@ -1,5 +1,5 @@
 [package]
-name = "lantern-language"
+name = "elucid-language"
 version.workspace = true
 edition.workspace = true
 

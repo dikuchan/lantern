@@ -1520,6 +1520,50 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
+name = "elucid-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "elucid-engine",
+ "elucid-ingester",
+ "elucid-language",
+ "nu-ansi-term",
+ "reedline",
+ "tokio",
+]
+
+[[package]]
+name = "elucid-engine"
+version = "0.1.0"
+dependencies = [
+ "datafusion",
+ "elucid-language",
+]
+
+[[package]]
+name = "elucid-ingester"
+version = "0.1.0"
+dependencies = [
+ "arrow",
+ "arrow-json",
+ "parquet",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "elucid-language"
+version = "0.1.0"
+dependencies = [
+ "ariadne",
+ "chumsky",
+ "insta",
+ "logos",
+]
+
+[[package]]
 name = "encode_unicode"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2014,50 +2058,6 @@ checksum = "464a3709c7f55f1f721e5389aa6ea4e3bc6aba669353300af094b29ffbdde1d8"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "lantern-cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "lantern-engine",
- "lantern-ingester",
- "lantern-language",
- "nu-ansi-term",
- "reedline",
- "tokio",
-]
-
-[[package]]
-name = "lantern-engine"
-version = "0.1.0"
-dependencies = [
- "datafusion",
- "lantern-language",
-]
-
-[[package]]
-name = "lantern-ingester"
-version = "0.1.0"
-dependencies = [
- "arrow",
- "arrow-json",
- "parquet",
- "thiserror",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "lantern-language"
-version = "0.1.0"
-dependencies = [
- "ariadne",
- "chumsky",
- "insta",
- "logos",
 ]
 
 [[package]]

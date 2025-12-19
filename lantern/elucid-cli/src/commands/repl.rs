@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::anyhow;
 use clap::Args;
-use lantern_engine::Context;
+use elucid_engine::Context;
 
 use crate::command::Command;
 use crate::repl;

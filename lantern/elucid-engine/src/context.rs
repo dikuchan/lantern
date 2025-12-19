@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use datafusion::error::{DataFusionError, Result};
 use datafusion::prelude::{DataFrame, SessionConfig, SessionContext, *};
-use lantern_language::parser;
+use elucid_language::parser;
 
 use crate::planner::QueryPlanner;
 

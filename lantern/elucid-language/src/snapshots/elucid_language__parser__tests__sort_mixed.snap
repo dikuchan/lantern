@@ -1,5 +1,5 @@
 ---
-source: lantern-language/src/parser.rs
+source: elucid-language/src/parser.rs
 expression: ast
 ---
 Query {
